@@ -14,23 +14,23 @@ import org.springframework.beans.factory.annotation.Value;
 @RestController
 @EnableAutoConfiguration
 public class FrontendController {
-    @Value("${PRODUCTS_APP_SERVICE_HOST}")
-    private String productsAppHost;
+    @Value("${PRODUCTS_SERVICE_HOST}")
+    private String productsHost;
      
-    @Value("${PRODUCTS_APP_SERVICE_PORT}")
-    private String productsAppPort;
+    @Value("${PRODUCTS_SERVICE_PORT}")
+    private String productsPort;
     
-    @Value("${ORDERS_APP_SERVICE_HOST}")
-    private String ordersAppHost;
+    @Value("${ORDERS_SERVICE_HOST}")
+    private String ordersHost;
      
-    @Value("${ORDERS_APP_SERVICE_PORT}")
-    private String ordersAppPort;
+    @Value("${ORDERS_SERVICE_PORT}")
+    private String ordersPort;
     
 	@GetMapping("/orders")
 	@ResponseBody
 	List<Order> allOrders() {
 		RestTemplate restTemplate = new RestTemplate();
-		String url = "http://" + ordersAppHost + ":" + ordersAppPort;
+		String url = "http://" + ordersHost + ":" + ordersPort;
 		ArrayList<Order> orders = restTemplate.getForObject(url, ArrayList.class);
 		return orders;
 	}
@@ -38,7 +38,7 @@ public class FrontendController {
 	@GetMapping("/orders/{id}")
 	Order getOrder(@PathVariable Integer id) {
 		RestTemplate restTemplate = new RestTemplate();
-		String url = "http://" + ordersAppHost + ":" + ordersAppPort + "/" + id;
+		String url = "http://" + ordersHost + ":" + ordersPort + "/" + id;
 		Order order = restTemplate.getForObject(url, Order.class);
 		return order;
 	}
@@ -47,7 +47,7 @@ public class FrontendController {
 	@ResponseBody
 	List<Product> allProducts() {
 		RestTemplate restTemplate = new RestTemplate();
-		String url = "http://" + productsAppHost + ":" + productsAppPort;
+		String url = "http://" + productsHost + ":" + productsPort;
 		ArrayList<Product> products = restTemplate.getForObject(url, ArrayList.class);
 		return products;
 	}
@@ -55,7 +55,7 @@ public class FrontendController {
 	@GetMapping("/products/{id}")
 	Product getProduct(@PathVariable Integer id) {
 		RestTemplate restTemplate = new RestTemplate();
-		String url = "http://" + productsAppHost + ":" + productsAppPort + "/" + id;
+		String url = "http://" + productsHost + ":" + productsPort + "/" + id;
 		Product product = restTemplate.getForObject(url, Product.class);
 		return product;
 	}
