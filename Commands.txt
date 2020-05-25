@@ -23,3 +23,39 @@ curl -i -X POST -H "Content-Type: application/json" -d "{\"name\":\"Test Order\"
 curl -i -X GET http://localhost:8080/
 curl -i -X PUT -H "Content-Type: application/json" -d "{\"id\":\"5\", \"name\":\"New Test Order\", \"total\":\"199.99\"}" http://localhost:8080/
 curl -i -X GET http://localhost:8080/
+
+# Install git
+sudo yum install git
+
+# Install zip and unzip
+sudo yum install zip
+sudo yum install unzip
+
+# Install OpenJDK
+sudo yum install java-1.8.0-openjdk
+sudo yum install java-1.8.0-openjdk-devel
+
+# Install maven
+# get the download URL for latest Maven from https://maven.apache.org/download.cgi
+curl -O http://mirror.metrocast.net/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip
+sudo unzip apache-maven-3.6.3-bin.zip -d /bin
+export PATH=$PATH:/bin/apache-maven-3.6.3/bin
+mvn -version
+
+# git commands
+git init
+git add <<filename>>
+git commit -m "Initial commit"
+git remote add origin https://github.com/mkopparapu71/k8s-microservices-poc.git
+git push -u origin master
+git pull https://github.com/mkopparapu71/k8s-microservices-poc.git
+git checkout master
+
+# Docker commands
+docker build -t k8s-microservice-products .
+docker build -t k8s-microservice-orders .
+docker build -t k8s-microservice-frontend .
+docker run -p 8081:8081 k8s-microservice-products
+
+# Kubernetes commands
+kubectl apply -f
