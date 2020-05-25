@@ -1,6 +1,6 @@
 cd C:\Data\Java\workspace-rest
-mvn clean install
-mvn spring-boot:run
+/bin/apache-maven-3.6.3/bin/mvn clean install
+/bin/apache-maven-3.6.3/bin/mvn spring-boot:run
 
 # Product CURL Commands
 curl -i -X GET http://localhost:8080/
@@ -47,15 +47,60 @@ git init
 git add <<filename>>
 git commit -m "Initial commit"
 git remote add origin https://github.com/mkopparapu71/k8s-microservices-poc.git
+
+#git push and pull from the origin
 git push -u origin master
-git pull https://github.com/mkopparapu71/k8s-microservices-poc.git
+git push origin master
 git checkout master
 
 # Docker commands
+docker login
+
 docker build -t k8s-microservice-products .
 docker build -t k8s-microservice-orders .
 docker build -t k8s-microservice-frontend .
 docker run -p 8081:8081 k8s-microservice-products
+docker container ps -a | grep prod
+docker container rm k8s-microservice-products
+
+docker tag k8s-microservice-products:latest mkopparapu69/k8s-microservice-products:v1
+docker push mkopparapu69/k8s-microservice-products:v1
+docker tag k8s-microservice-orders:latest mkopparapu69/k8s-microservice-orders:v1
+docker push mkopparapu69/k8s-microservice-orders:v1
+docker tag k8s-microservice-frontend:latest mkopparapu69/k8s-microservice-frontend:v1
+docker push mkopparapu69/k8s-microservice-frontend:v1
 
 # Kubernetes commands
-kubectl apply -f
+kubectl apply -f products-deployment.yaml
+kubectl apply -f orders-deployment.yaml
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f products-service.yaml
+kubectl apply -f orders-service.yaml
+kubectl apply -f frontend-service.yaml
+
+kubectl delete service frotnend
+kubectl delete service orders
+kubectl delete service products
+kubectl delete deployment frontend
+kubectl delete deployment orders
+kubectl delete deployment products
+
+kubectl get pods -o wide
+kubectl exec orders-75ccbcdb4c-jvjbj -- printenv | more
+kubectl exec products-665fc857ff-zxvlz -- printenv | more
+kubectl exec frontend-95477f6bc-z5ttg -- printenv | more
+
+# Kubernetes commands with Name Space
+kubectl create namespace k8s-microservice-poc
+kubectl -n k8s-microservice-poc create -f products-deployment.yaml
+kubectl -n k8s-microservice-poc create -f products-service.yaml
+kubectl -n k8s-microservice-poc apply -f products-deployment.yaml
+kubectl -n k8s-microservice-poc apply -f products-service.yaml
+
+kubectl -n k8s-microservice-poc delete service products-service
+kubectl -n k8s-microservice-poc delete deployment products-deployment
+
+kubectl get pods -o wide -n k8s-microservice-poc
+kubectl exec orders-75ccbcdb4c-jvjbj -- printenv | more
+kubectl exec products-665fc857ff-kpfql -- printenv | more
+
