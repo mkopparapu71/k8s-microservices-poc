@@ -26,6 +26,18 @@ public class FrontendController {
     @Value("${ORDERS_SERVICE_PORT}")
     private String ordersPort;
     
+	@GetMapping("/")
+	@ResponseBody
+	ArrayList<String> getDefault() {
+		ArrayList<String> list = new ArrayList<String>();
+		list.add("Hello World!!!");
+		list.add("OrdersHost: " + ordersHost);
+		list.add("OrdersPort: " + ordersPort);
+		list.add("ProductsHost: " + productsHost);
+		list.add("ProductsPort: " + productsHost);
+		return list;
+	}
+	
 	@GetMapping("/orders")
 	@ResponseBody
 	List<Order> allOrders() {
