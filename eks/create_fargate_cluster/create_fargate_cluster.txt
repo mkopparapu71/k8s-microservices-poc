@@ -44,7 +44,7 @@ kubectl apply -f alb-ingress-controller.yaml
 kubectl get deployment.apps/alb-ingress-controller -n kube-system -o json | jq '.spec.template.spec.containers[0].args += ["--cluster-name='k8s-microservices-poc'", "--aws-vpc-id='vpc-0573caf8a38f90735'", "--aws-region='us-east-1'"]' | kubectl apply -f -
 
 #I should be using Fine Grained IAM roles, but this AWS ACCESS KEY approach is much simpler to implement for me at the moment.
-kubectl get deployment.apps/alb-ingress-controller -n kube-system -o json | jq '.spec.template.spec.containers[0].env += [ { "name": "AWS_ACCESS_KEY_ID", "value": "'AKIAIAMHK2KFLVX37YWQ'" }, { "name": "AWS_SECRET_ACCESS_KEY", "value": "'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'" } ]' | kubectl apply -f -
+kubectl get deployment.apps/alb-ingress-controller -n kube-system -o json | jq '.spec.template.spec.containers[0].env += [ { "name": "AWS_ACCESS_KEY_ID", "value": "'XXXXXXXXXX'" }, { "name": "AWS_SECRET_ACCESS_KEY", "value": "'XXXXXXXXXX'" } ]' | kubectl apply -f -
 
 # After applying the manifests, you can check the status of the ingress controller and you should be able to see logs like this:
 kubectl logs -n kube-system $(kubectl get po -n kube-system | egrep -o "alb-ingress[a-zA-Z0-9-]+")
