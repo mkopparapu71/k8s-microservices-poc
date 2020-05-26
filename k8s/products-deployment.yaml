@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products
+  labels:
+    app: products
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      containers:
+      - name: products
+        image: mkopparapu69/k8s-microservice-products:v1
+        name: products
+        ports:
+        - containerPort: 8081

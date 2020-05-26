@@ -1,0 +1,66 @@
+# Check for required packages
+command -v eksctl
+command -v aws
+command -v jq
+command -v kubectl
+
+# Intall epel
+sudo yum install epel-release -y
+
+#Install jq
+sudo yum install jq -y
+
+# Create EKS Fargate Cluster
+eksctl create cluster --name k8s-microservices-poc --version 1.16 --region us-east-1 --fargate --alb-ingress-access
+
+eksctl utils associate-iam-oidc-provider --cluster k8s-microservices-poc --approve
+
+wget -O alb-ingress-iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/master/docs/examples/iam-policy.json
+aws iam create-policy --policy-name ALBIngressControllerIAMPolicy --policy-document file://alb-ingress-iam-policy.json
+
+# Run the following command and note the VPC Id
+eksctl get cluster --region us-east-1 --name k8s-microservices-poc -o yaml
+# VPC ID is vpc-0573caf8a38f90735
+
+# Setup the AWS ALB ingress controller
+wget https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.4/docs/examples/rbac-role.yaml
+wget https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.4/docs/examples/alb-ingress-controller.yaml
+
+kubectl apply -f rbac-role.yaml
+
+# Setup the AWS ALB ingress controller
+eksctl create iamserviceaccount --name alb-ingress-controller --namespace kube-system --cluster k8s-microservices-poc --attach-policy-arn arn:aws:iam::535882074894:policy/ALBIngressControllerIAMPolicy --approve
+
+kubectl apply -f alb-ingress-controller.yaml
+
+# cluster-name: The name of the cluster.
+# vpc-id: VPC ID of the cluster.
+# aws-region: The region for your EKS cluster.
+# AWS_ACCESS_KEY_ID: The AWS access key id that ALB controller can use to communicate with AWS.
+# AWS_SECRET_ACCESS_KEY: The AWS secret access key id that ALB controller can use to communicate with AWS.
+# For now, we will add the access key in plaintext in the file. However, for a production setup, it is recommended to use a project like kube2iam for providing IAM Access.
+
+# Deploy the modified alb-ingress-controller
+kubectl get deployment.apps/alb-ingress-controller -n kube-system -o json | jq '.spec.template.spec.containers[0].args += ["--cluster-name='k8s-microservices-poc'", "--aws-vpc-id='vpc-0573caf8a38f90735'", "--aws-region='us-east-1'"]' | kubectl apply -f -
+
+#I should be using Fine Grained IAM roles, but this AWS ACCESS KEY approach is much simpler to implement for me at the moment.
+kubectl get deployment.apps/alb-ingress-controller -n kube-system -o json | jq '.spec.template.spec.containers[0].env += [ { "name": "AWS_ACCESS_KEY_ID", "value": "'AKIAIAMHK2KFLVX37YWQ'" }, { "name": "AWS_SECRET_ACCESS_KEY", "value": "'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'" } ]' | kubectl apply -f -
+
+# After applying the manifests, you can check the status of the ingress controller and you should be able to see logs like this:
+kubectl logs -n kube-system $(kubectl get po -n kube-system | egrep -o "alb-ingress[a-zA-Z0-9-]+")
+
+# Create a new Fargate Profile if the services are to be deployed in a different namespcae
+eksctl create fargateprofile --namespace k8s-microservices-poc --cluster k8s-microservices-poc --region us-east-1
+
+# Create a new Fargate Profile if the services are to be deployed in a different namespcae
+kubectl apply -f namespace.yaml
+kubectl apply -f service.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f ingress.yaml
+
+# kubectl describe to check of the service is up
+kubectl describe ing -n python-web python-web
+# {"apiVersion":"extensions/v1beta1","kind":"Ingress","metadata":{"annotations":{"alb.ingress.kubernetes.io/scheme":"internet-facing","alb.ingress.kubernetes.io/target-type":"ip","kubernetes.io/ingress.class":"alb"},"name":"python-web","namespace":"python-web"},"spec":{"rules":[{"http":{"paths":[{"backend":{"serviceName":"python-web","servicePort":80},"path":"/"}]}}]}}
+
+# Delete the cluster
+eksctl delete cluster --region=us-east-1 --name k8s-microservices-poc
