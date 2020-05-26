@@ -13,58 +13,62 @@ import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @EnableAutoConfiguration
-public class FrontendController {
+public class FrontendControllerLocal {
+    @Value("${PRODUCTS_SERVICE_HOST}")
+    private String productsHost;
+     
+    @Value("${PRODUCTS_SERVICE_PORT}")
+    private String productsPort;
+    
+    @Value("${ORDERS_SERVICE_HOST}")
+    private String ordersHost;
+     
+    @Value("${ORDERS_SERVICE_PORT}")
+    private String ordersPort;
+    
 	@GetMapping("/")
 	@ResponseBody
 	ArrayList<String> getDefault() {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add("Hello World!!!");
+		list.add("OrdersHost: " + ordersHost);
+		list.add("OrdersPort: " + ordersPort);
+		list.add("ProductsHost: " + productsHost);
+		list.add("ProductsPort: " + productsHost);
 		return list;
 	}
 	
 	@GetMapping("/orders")
 	@ResponseBody
 	List<Order> allOrders() {
-		/**
 		RestTemplate restTemplate = new RestTemplate();
 		String url = "http://" + ordersHost + ":" + ordersPort;
 		ArrayList<Order> orders = restTemplate.getForObject(url, ArrayList.class);
 		return orders;
-		**/
-		return new ArrayList<Order>();
 	}
 	
 	@GetMapping("/orders/{id}")
 	Order getOrder(@PathVariable Integer id) {
-		/**
 		RestTemplate restTemplate = new RestTemplate();
 		String url = "http://" + ordersHost + ":" + ordersPort + "/" + id;
 		Order order = restTemplate.getForObject(url, Order.class);
 		return order;
-		**/
-		return new Order();
 	}
 
 	@GetMapping("/products")
 	@ResponseBody
 	List<Product> allProducts() {
-		/**
 		RestTemplate restTemplate = new RestTemplate();
 		String url = "http://" + productsHost + ":" + productsPort;
 		ArrayList<Product> products = restTemplate.getForObject(url, ArrayList.class);
 		return products;
-		**/
-		return new ArrayList<Product>();
 	}
 	
 	@GetMapping("/products/{id}")
 	Product getProduct(@PathVariable Integer id) {
-		/**
 		RestTemplate restTemplate = new RestTemplate();
 		String url = "http://" + productsHost + ":" + productsPort + "/" + id;
 		Product product = restTemplate.getForObject(url, Product.class);
 		return product;
-		**/
-		return new Product();
 	}
 }
