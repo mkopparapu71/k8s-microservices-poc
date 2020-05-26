@@ -130,7 +130,7 @@ kubectl exec products-665fc857ff-kpfql -- printenv | more
 # AWS Kubernetes commands
 
 # Create EKS Fargate Cluster
-eksctl create cluster --name k8s-microservices-poc --version 1.16 --region us-east-1 -fargate --alb-ingress-access
+eksctl create cluster --name k8s-microservices-poc --version 1.16 --region us-east-1 --fargate --alb-ingress-access
 # Run the following command and note the VPC Id
 eksctl get cluster --region us-east-1 --name k8s-microservices-poc -o yaml
 # Setup the AWS ALB ingress controller

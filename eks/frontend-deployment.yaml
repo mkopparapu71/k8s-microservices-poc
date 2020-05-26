@@ -1,22 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
-  labels:
-    app: frontend
+  name: "frontend-deployment"
+  namespace: "default"
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: frontend
+      app: "frontend"
   template:
     metadata:
       labels:
-        app: frontend
+        app: "frontend"
     spec:
       containers:
-      - name: frontend
-        image: 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
-        name: frontend
+      - image: 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
+        imagePullPolicy: Always
+        name: "frontend"
         ports:
         - containerPort: 8080
