@@ -42,6 +42,25 @@ sudo unzip apache-maven-3.6.3-bin.zip -d /bin
 export PATH=$PATH:/bin/apache-maven-3.6.3/bin
 mvn -version
 
+# Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Install EKSCTL
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+# https://github.com/weaveworks/eksctl
+
+# AWS CLI Commands
+aws configure
+aws ec2 describe-key-pairs --region ue-east-1
+
+aws ecr create-repository --repository-name k8s-microservices-poc/products --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=false
+aws ecr create-repository --repository-name k8s-microservices-poc/orders --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=false
+aws ecr create-repository --repository-name k8s-microservices-poc/frontend --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=false
+
 # git commands
 git init
 git add <<filename>>
@@ -56,21 +75,36 @@ git checkout master
 # Docker commands
 docker login
 
-docker build -t k8s-microservice-products .
-docker build -t k8s-microservice-orders .
-docker build -t k8s-microservice-frontend .
-docker run -p 8081:8081 k8s-microservice-products
+docker build -t k8s-microservices-products .
+docker build -t k8s-microservices-orders .
+docker build -t k8s-microservices-frontend .
+docker run -p 8081:8081 k8s-microservices-products
 docker container ps -a | grep prod
-docker container rm k8s-microservice-products
+docker container rm k8s-microservices-products
 
-docker tag k8s-microservice-products:latest mkopparapu69/k8s-microservice-products:v1
-docker push mkopparapu69/k8s-microservice-products:v1
-docker tag k8s-microservice-orders:latest mkopparapu69/k8s-microservice-orders:v1
-docker push mkopparapu69/k8s-microservice-orders:v1
-docker tag k8s-microservice-frontend:latest mkopparapu69/k8s-microservice-frontend:v1
-docker push mkopparapu69/k8s-microservice-frontend:v1
+docker tag k8s-microservices-products:latest mkopparapu69/k8s-microservices-products:v1
+docker push mkopparapu69/k8s-microservices-products:v1
+docker tag k8s-microservices-orders:latest mkopparapu69/k8s-microservices-orders:v1
+docker push mkopparapu69/k8s-microservices-orders:v1
+docker tag k8s-microservices-frontend:latest mkopparapu69/k8s-microservices-frontend:v1
+docker push mkopparapu69/k8s-microservices-frontend:v1
+
+# AWS Docker commands
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 535882074894.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag k8s-microservices-products:latest 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/products:v1
+docker push 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/products:v1
+docker tag k8s-microservices-orders:latest 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/orders:v1
+docker push 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/orders:v1
+docker tag k8s-microservices-frontend:latest 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
+docker push 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
 
 # Kubernetes commands
+kubectl config get-contexts
+kubectl config use-context kubernetes-admin@kubernetes
+kubectl config current-context
+kubectl get pods -o wide
+
 kubectl apply -f products-deployment.yaml
 kubectl apply -f orders-deployment.yaml
 kubectl apply -f frontend-deployment.yaml
@@ -78,7 +112,7 @@ kubectl apply -f products-service.yaml
 kubectl apply -f orders-service.yaml
 kubectl apply -f frontend-service.yaml
 
-kubectl delete service frotnend
+kubectl delete service frontend
 kubectl delete service orders
 kubectl delete service products
 kubectl delete deployment frontend
@@ -90,17 +124,57 @@ kubectl exec orders-75ccbcdb4c-jvjbj -- printenv | more
 kubectl exec products-665fc857ff-zxvlz -- printenv | more
 kubectl exec frontend-95477f6bc-z5ttg -- printenv | more
 
-# Kubernetes commands with Name Space
-kubectl create namespace k8s-microservice-poc
-kubectl -n k8s-microservice-poc create -f products-deployment.yaml
-kubectl -n k8s-microservice-poc create -f products-service.yaml
-kubectl -n k8s-microservice-poc apply -f products-deployment.yaml
-kubectl -n k8s-microservice-poc apply -f products-service.yaml
-
-kubectl -n k8s-microservice-poc delete service products-service
-kubectl -n k8s-microservice-poc delete deployment products-deployment
-
-kubectl get pods -o wide -n k8s-microservice-poc
 kubectl exec orders-75ccbcdb4c-jvjbj -- printenv | more
 kubectl exec products-665fc857ff-kpfql -- printenv | more
+
+# AWS Kubernetes commands
+
+# Create EKS Fargate Cluster
+eksctl create cluster --name k8s-microservices-poc --version 1.16 --region us-east-1 -fargate --alb-ingress-access
+# Run the following command and note the VPC Id
+eksctl get cluster --region us-east-1 --name k8s-microservices-poc -o yaml
+# Setup the AWS ALB ingress controller
+wget https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.4/docs/examples/rbac-role.yaml
+wget https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.4/docs/examples/alb-ingress-controller.yaml
+# Uncomment and edit the following fields in the ALB Ingress Controller manifest:
+# cluster-name: The name of the cluster.
+# vpc-id: VPC ID of the cluster. 
+# aws-region: The region for your EKS cluster.
+# AWS_ACCESS_KEY_ID: The AWS access key id that ALB controller can use to communicate with AWS. 
+# AWS_SECRET_ACCESS_KEY: The AWS secret access key id that ALB controller can use to communicate with AWS. 
+# For now, we will add the access key in plaintext in the file. However, for a production setup, it is recommended to use a project like kube2iam for providing IAM Access.
+# Deploy the modified alb-ingress-controller
+kubectl apply -f rbac-role.yaml
+kubectl apply -f alb-ingress-controller.yaml
+# After applying the manifests, you can check the status of the ingress controller and you should be able to see logs like this:
+kubectl logs -n kube-system $(kubectl get po -n kube-system | egrep -o "alb-ingress[a-zA-Z0-9-]+")
+
+kubectl config get-contexts
+kubectl config use-context iam-root-account@k8s-microservices-poc.us-east-1.eksctl.io
+kubectl config current-context
+kubectl get pods -o wide
+
+kubectl apply -f products-deployment.yaml
+kubectl apply -f orders-deployment.yaml
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f products-service.yaml
+kubectl apply -f orders-service.yaml
+kubectl apply -f frontend-service.yaml
+
+kubectl delete service frontend
+kubectl delete service orders
+kubectl delete service products
+kubectl delete deployment frontend
+kubectl delete deployment orders
+kubectl delete deployment products
+
+eksctl create fargateprofile --namespace python-web --cluster fargate-tutorial-cluster --region us-east-2
+kubectl apply -f namespace.yaml
+kubectl apply -f service.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f kubernetes/ingress.yaml
+kubectl describe ing -n python-web python-web
+# {"apiVersion":"extensions/v1beta1","kind":"Ingress","metadata":{"annotations":{"alb.ingress.kubernetes.io/scheme":"internet-facing","alb.ingress.kubernetes.io/target-type":"ip","kubernetes.io/ingress.class":"alb"},"name":"python-web","namespace":"python-web"},"spec":{"rules":[{"http":{"paths":[{"backend":{"serviceName":"python-web","servicePort":80},"path":"/"}]}}]}}
+
+eksctl delete cluster --region=us-east-1 --name k8s-microservices-poc
 
