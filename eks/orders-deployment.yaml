@@ -1,7 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "orders-deployment"
+  labels:
+    app.kubernetes.io/name: orders
+    app.kubernetes.io/instance: k8s-microservices-poc
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: k8s-microservices-poc
+    app.kubernetes.io/managed-by: kubectl
+  name: "orders"
   namespace: "default"
 spec:
   replicas: 2

@@ -1,7 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "products-service"
+  labels:
+    app.kubernetes.io/name: products
+    app.kubernetes.io/instance: k8s-microservices-poc
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: k8s-microservices-poc
+    app.kubernetes.io/managed-by: kubectl
+  name: "products"
   namespace: "default"
 spec:
   ports:

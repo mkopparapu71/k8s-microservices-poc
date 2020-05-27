@@ -1,12 +1,19 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "orders-service"
+  labels:
+    app.kubernetes.io/name: orders
+    app.kubernetes.io/instance: k8s-microservices-poc
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: k8s-microservices-poc
+    app.kubernetes.io/managed-by: kubectl
+  name: "orders"
   namespace: "default"
 spec:
   ports:
-  - port: 8081
-    targetPort: 8081
+  - port: 8082
+    targetPort: 8082
     protocol: TCP
   selector:
     app: "orders"

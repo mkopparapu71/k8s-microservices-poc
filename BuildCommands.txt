@@ -1,0 +1,16 @@
+git push origin master
+
+pit pull origin master
+
+/bin/apache-maven-3.6.3/bin/mvn clean install
+
+/bin/apache-maven-3.6.3/bin/mvn spring-boot:run
+
+docker build -t k8s-microservices-frontend .
+
+docker tag k8s-microservices-frontend:latest 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
+
+docker push 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
+
+kubectl exec frontend-9859ff955-lkgv7 exec -- printenv | more
+

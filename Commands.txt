@@ -178,3 +178,5 @@ kubectl describe ing -n python-web python-web
 
 eksctl delete cluster --region=us-east-1 --name k8s-microservices-poc
 
+# https://aws.amazon.com/blogs/containers/using-alb-ingress-controller-with-amazon-eks-on-fargate/
+

@@ -1,7 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "frontend-deployment"
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: k8s-microservices-poc
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: k8s-microservices-poc
+    app.kubernetes.io/managed-by: kubectl
+  name: "frontend"
   namespace: "default"
 spec:
   replicas: 2
@@ -14,8 +21,13 @@ spec:
         app: "frontend"
     spec:
       containers:
-      - image: 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v1
+      - image: 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-poc/frontend:v4
         imagePullPolicy: Always
         name: "frontend"
         ports:
         - containerPort: 8080
+        env:
+        - name: PRODUCTS_HOST
+          value: products
+        - name: ORDERS_HOST
+          value: orders
