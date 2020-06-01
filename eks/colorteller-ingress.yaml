@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/name: colorteller
+    app.kubernetes.io/instance: k8s-microservices-ct
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: k8s-microservices-ct
+    app.kubernetes.io/managed-by: kubectl
+  name: "colorteller"
+  namespace: "default"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+  labels:
+    app: colorteller
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: "colorteller"
+          servicePort: 8080
+

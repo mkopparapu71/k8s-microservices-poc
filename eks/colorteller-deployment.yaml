@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: colorteller
+    app.kubernetes.io/instance: k8s-microservices-ct
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: k8s-microservices-ct
+    app.kubernetes.io/managed-by: kubectl
+  name: "colorteller"
+  namespace: "default"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "colorteller"
+  template:
+    metadata:
+      labels:
+        app: "colorteller"
+    spec:
+      containers:
+      - image: 535882074894.dkr.ecr.us-east-1.amazonaws.com/k8s-microservices-ct/colorteller:v1
+        imagePullPolicy: Always
+        name: "colorteller"
+        ports:
+        - containerPort: 8080

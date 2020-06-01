@@ -1,0 +1,22 @@
+# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_AWSCLI_Fargate.html
+
+aws ecs create-cluster --cluster-name fargate-cluster
+
+aws ecs register-task-definition --cli-input-json file://$HOME/tasks/FargateTask.json
+
+aws ecs list-task-definitions
+
+# Example using a private subnet.
+aws ecs create-service --cluster fargate-cluster --service-name fargate-service --task-definition sample-fargate:1 --desired-count 1 --launch-type "FARGATE" --network-configuration "awsvpcConfiguration={subnets=[subnet-abcd1234],securityGroups=[sg-abcd1234]}"
+
+# Example using a public subnet.
+aws ecs create-service --cluster fargate-cluster --service-name fargate-service --task-definition sample-fargate:1 --desired-count 1 --launch-type "FARGATE" --network-configuration "awsvpcConfiguration={subnets=[subnet-abcd1234],securityGroups=[sg-abcd1234],assignPublicIp=ENABLED}"
+
+aws ecs list-services --cluster fargate-cluster
+
+aws ecs describe-services --cluster fargate-cluster --services fargate-service
+
+aws ecs delete-service --cluster fargate-cluster --service fargate-service --force
+
+aws ecs delete-cluster --cluster fargate-cluster
+
