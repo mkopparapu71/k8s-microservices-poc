@@ -1,0 +1,23 @@
+# Step 1: Create the Service Discovery Resources 
+# Create a private service discovery namespace named tutorial within one of your existing VPCs:
+aws servicediscovery create-private-dns-namespace --name ecommerce.ecos.fnma --vpc vpc-0121d09820d126e30 --region us-east-1
+
+# Using the OperationId from the previous output, verify that the private namespace was created successfully. Copy the namespace ID as it is used in subsequent commands. 
+aws servicediscovery get-operation --operation-id yuc3vxxxvttioe3mtrtm4hlnorizjo5c-kbbl66po
+# Namespace ID is ns-proh3mnrd76w3slz
+
+# Using the NAMESPACE ID from the previous output, create a service discovery service named myapplication. Copy the service discovery service ID as it is used in subsequent commands: 
+aws servicediscovery create-service --name orders --dns-config 'NamespaceId="ns-proh3mnrd76w3slz",DnsRecords=[{Type="A",TTL="300"}]' --health-check-custom-config FailureThreshold=1 --region us-east-1
+# Service ID is srv-nxrjisx3kc7nbzo4
+
+# Step 2: Create the Amazon ECS Resources 
+# Create an Amazon ECS cluster named tutorial to use:
+aws ecs create-cluster --cluster-name ecommerce --region us-east-1
+
+# Register a task definition that is compatible with Fargate. It requires the use of the awsvpc network mode. The following is the example task definition used for this tutorial. First, create a file named fargate-task.json with the contents of the following task definition.  Then, register the task definition using the fargate-task.json file that you created: 
+aws ecs register-task-definition --cli-input-json file://fargate-task.json --region us-east-1
+
+# Tear Down:
+# Delete the service discovery namespace:
+aws servicediscovery delete-namespace --id ns-xqf3u3jpjx2ctgbx --region us-east-1
+

@@ -14,17 +14,17 @@ import org.springframework.beans.factory.annotation.Value;
 @RestController
 @EnableAutoConfiguration
 public class FrontendController {
-    @Value("${PRODUCTS_SERVICE_HOST}")
-    private String productsHost;
+    // @Value("${PRODUCTS_SERVICE_HOST}")
+    private String productsHost = "products.ecommerce.ecos.fnma";
      
-    @Value("${PRODUCTS_SERVICE_PORT}")
-    private String productsPort;
+    // @Value("${PRODUCTS_SERVICE_PORT}")
+    private String productsPort = "80";
     
-    @Value("${ORDERS_SERVICE_HOST}")
-    private String ordersHost;
+    // @Value("${ORDERS_SERVICE_HOST}")
+    private String ordersHost = "orders.ecommerce.ecos.fnma";
      
-    @Value("${ORDERS_SERVICE_PORT}")
-    private String ordersPort;
+    // @Value("${ORDERS_SERVICE_PORT}")
+    private String ordersPort = "80";
     
 	@GetMapping("/")
 	@ResponseBody
